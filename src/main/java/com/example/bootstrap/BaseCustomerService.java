@@ -29,18 +29,24 @@ public class BaseCustomerService implements CustomerService {
     public Collection<Customer> save(String... names) {
         List<Customer> customerList = new ArrayList<>();
         for(String name: names) {
-            KeyHolder keyHolder = new GeneratedKeyHolder();
-            this.jdbcTemplate.update(connection -> {
-                PreparedStatement ps = connection.prepareStatement("INSERT INTO CUSTOMERS (name) values (?)", Statement.RETURN_GENERATED_KEYS);
-                ps.setString(1, name);
-                return ps;
-            }, keyHolder);
-            Long keyHolderKey = Objects.requireNonNull(keyHolder.getKey()).longValue();
-            Customer customer = this.findById(keyHolderKey);
-            Assert.notNull(name, "The name given must not be null");
-            customerList.add(customer);
+           Customer customer = this.save(name);
+           customerList.add(customer);
         }
         return customerList;
+    }
+
+    @Override
+    public Customer save(String name) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        this.jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO CUSTOMERS (name) values (?)", Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, name);
+            return ps;
+        }, keyHolder);
+        Long keyHolderKey = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Customer customer = this.findById(keyHolderKey);
+        Assert.notNull(name, "The name given must not be null");
+        return customer;
     }
 
     @Override
